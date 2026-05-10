@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>SKF Cybersecurity Compliance Assessment</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            padding: 30px;
+        }
+
+        h1 {
+            color: #003366;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.08);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        select,
+        input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 15px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            background: #003366;
+            color: white;
+            border-radius: 5px;
+            margin: 5px 5px 10px 0;
+            font-size: 13px;
+        }
+
+        .unit {
+            font-size: 13px;
+            color: #666;
+            margin-top: 6px;
+        }
+
+        button {
+            background: #003366;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #0055aa;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1> Cybersecurity Compliance Assessment</h1>
+
+<p>
+    Pré-évaluation cybersécurité basée sur EN 18031-1, IEC 62443-4-1 et IEC 62443-4-2.
+</p>
+
+<form method="POST">
+
+    {% for req in requirements %}
+
+    <div class="card">
+
+        <label>
+            {{ loop.index }}. {{ req.question }}
+        </label>
+
+        <span class="badge">{{ req.family }}</span>
+        <span class="badge">SL{{ req.security_level }}</span>
+
+        {% for standard in req.standards %}
+            <span class="badge">{{ standard }}</span>
+        {% endfor %}
+
+        {% if req.type == "binary" %}
+
+            <select name="{{ req.id }}" required>
+                <option value="" disabled selected>-- Sélectionner une réponse --</option>
+                <option value="1">Oui, exigence respectée</option>
+                <option value="0">Non, exigence non respectée</option>
+            </select>
+
+        {% elif req.type == "numeric" or req.type == "numeric_max" %}
+
+            <input
+                type="number"
+                name="{{ req.id }}"
+                min="0"
+                step="1"
+                required
+                placeholder="Entrer une valeur numérique"
+            >
+
+            {% if req.unit %}
+            <div class="unit">
+                Unité : {{ req.unit }}
+            </div>
+            {% endif %}
+
+            {% if req.thresholds %}
+            <div class="unit">
+                Seuils :
+                SL1 = {{ req.thresholds.SL1 }},
+                SL2 = {{ req.thresholds.SL2 }},
+                SL3 = {{ req.thresholds.SL3 }}
+            </div>
+            {% endif %}
+
+        {% else %}
+
+            <p style="color:red;">
+                Type de question non reconnu : {{ req.type }}
+            </p>
+
+        {% endif %}
+
+    </div>
+
+    {% endfor %}
+
+    <button type="submit">
+        Analyser la conformité
+    </button>
+
+</form>
+
+</body>
+</html>

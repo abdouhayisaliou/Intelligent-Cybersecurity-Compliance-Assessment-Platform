@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Résultat de l’évaluation</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 12px rgba(0,0,0,0.08);
+        }
+
+        h1, h2, h3 {
+            color: #003366;
+        }
+
+        .score {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .level {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .ok {
+            color: #027a48;
+        }
+
+        .warning {
+            color: #b54708;
+        }
+
+        .danger {
+            color: #b42318;
+        }
+
+        .requirement {
+            border-left: 5px solid #b42318;
+            padding-left: 15px;
+            margin-bottom: 22px;
+            background: #fff7f7;
+            padding-top: 12px;
+            padding-bottom: 12px;
+            border-radius: 8px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #003366;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            margin: 5px 5px 5px 0;
+            font-size: 13px;
+        }
+
+        ul {
+            margin-top: 8px;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            background: #003366;
+            color: white;
+            padding: 12px 18px;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+
+        a:hover {
+            background: #0055aa;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- ===============================
+         BLOC RÉSULTAT GLOBAL
+    ================================== -->
+    <div class="card">
+
+        <h1>Résultat de pré-évaluation cybersécurité</h1>
+
+        <p class="score">
+            Score global : {{ evaluation.score }} %
+        </p>
+
+        <!-- État de conformité global -->
+        <p class="level
+            {% if evaluation.compliance_state == 'Produit conforme' %}ok
+            {% elif evaluation.compliance_state == 'Produit faiblement non conforme' %}warning
+            {% else %}danger
+            {% endif %}
+        ">
+            État de conformité : {{ evaluation.compliance_state }}
+        </p>
+
+        <!-- Security Level atteint -->
+        <p class="level
+            {% if evaluation.security_level == 'SL3' or evaluation.security_level == 'SL2' %}ok
+            {% elif evaluation.security_level == 'SL1' %}warning
+            {% else %}danger
+            {% endif %}
+        ">
+            Niveau de sécurité atteint : {{ evaluation.security_level }}
+        </p>
+
+        <p>
+            Cette analyse est une pré-évaluation basée sur des critères inspirés de
+            EN 18031-1, IEC 62443-4-1 et IEC 62443-4-2.
+        </p>
+
+    </div>
+
+    <!-- ===============================
+         EXIGENCES NON SATISFAITES
+    ================================== -->
+    <div class="card">
+
+        <h2>Exigences non satisfaites</h2>
+
+        {% if evaluation.failed_requirements %}
+
+            {% for req in evaluation.failed_requirements %}
+
+            <div class="requirement">
+
+                <h3>{{ req.title }}</h3>
+
+                <span class="badge">{{ req.family }}</span>
+                <span class="badge">SL{{ req.security_level }}</span>
+
+                {% for standard in req.standards %}
+                    <span class="badge">{{ standard }}</span>
+                {% endfor %}
+
+                <p>
+                    <strong>Cause :</strong> {{ req.root_cause }}
+                </p>
+
+                <p>
+                    <strong>Recommandations :</strong>
+                </p>
+
+                <ul>
+                    {% for rec in req.recommendations %}
+                    <li>{{ rec }}</li>
+                    {% endfor %}
+                </ul>
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <p class="ok">
+                Toutes les exigences évaluées sont satisfaites.
+            </p>
+
+        {% endif %}
+
+    </div>
+
+    <!-- ===============================
+         INTERPRÉTATION
+    ================================== -->
+    <div class="card">
+
+        <h2>Interprétation</h2>
+
+        {% if evaluation.compliance_state == "Produit conforme" %}
+            <p>
+                Le produit présente un niveau de conformité satisfaisant selon les critères évalués.
+                Les exigences majeures sont respectées.
+            </p>
+
+        {% elif evaluation.compliance_state == "Produit faiblement non conforme" %}
+            <p>
+                Le produit présente quelques écarts de conformité. Des actions correctives sont nécessaires,
+                mais le niveau global reste proche d’un état conforme.
+            </p>
+
+        {% elif evaluation.compliance_state == "Produit moyennement non conforme" %}
+            <p>
+                Le produit présente plusieurs écarts significatifs. Les corrections doivent être priorisées,
+                notamment sur les exigences critiques ou liées aux niveaux SL élevés.
+            </p>
+
+        {% else %}
+            <p>
+                Le produit présente un niveau de non-conformité élevé. Les écarts identifiés peuvent exposer
+                l’équipement à des risques importants et doivent être corrigés avant toute considération de conformité.
+            </p>
+        {% endif %}
+
+    </div>
+
+    <a href="/">Retour au formulaire</a>
+
+</div>
+<!-- ===============================
+     PRÉDICTION IA
+================================== -->
+<div class="card">
+
+    <h2>Prédiction du réseau de neurones</h2>
+
+    <p class="level
+        {% if ai_prediction.ai_label == 'Produit conforme' %}ok
+        {% elif ai_prediction.ai_label == 'Produit faiblement non conforme' %}warning
+        {% else %}danger
+        {% endif %}
+    ">
+        Résultat IA : {{ ai_prediction.ai_label }}
+    </p>
+
+    <p class="score">
+        Confiance du modèle : {{ ai_prediction.confidence }} %
+    </p>
+
+    <p>
+        Cette prédiction est produite par un réseau de neurones entraîné à partir du dataset généré
+        avec les exigences EN 18031-1, IEC 62443-4-1 et IEC 62443-4-2.
+    </p>
+
+</div>
+
+</body>
+
+</html>
